@@ -3,14 +3,12 @@
 
 #include <sqlite3.h>
 #include <iostream>
-
-void testDb();
+#include <memory>
 
 class MyDatabase
 {
 private:
-    sqlite3 *db;
-    sqlite3_stmt *stmt;
+    std::shared_ptr<sqlite3> database;
 
 public:
     MyDatabase();

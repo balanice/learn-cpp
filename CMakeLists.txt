@@ -14,6 +14,7 @@ add_executable(
     main.cpp
     SingletonData.cpp
     database.cpp
+    StatementWrapper.cpp
 )
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})

@@ -12,7 +12,7 @@ void Post()
     curl = curl_easy_init();
     if (curl)
     {
-        std::cout << "curl init succeed" << std::endl;
+        std::cout << "curl init success" << std::endl;
     }
     
 }
