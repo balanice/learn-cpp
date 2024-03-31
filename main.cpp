@@ -4,9 +4,23 @@
 #include "curl_test.hpp"
 #include "SingletonData.h"
 #include "database.h"
+#include "Crypt.h"
+#include "MyCrypt2.h"
 
 int main(int, char**)
 {
+    try {
+        testCrypt();
+    } catch (const std::exception &e) {
+        std::cout << "testCrypt error: " << e.what() << std::endl;
+    }
+
+    try {
+        testCrypt2();
+    } catch (const std::exception &e) {
+        std::cout << "testCrypt2 error: " << e.what() << std::endl;
+    }
+
     // std::string s = std::format("hello, {}", 99);
     // std::cout << s << std::endl;
     // Post();
@@ -21,7 +35,7 @@ int main(int, char**)
     // SingletonData::GetInstance().Put(tag, value);
     // SingletonData::GetInstance().Size(tag);
 
-    MyDatabase db;
+    /*MyDatabase db;
     db.CreateTable();
     if (db.Insert()) {
         std::cout << "Insert success" << std::endl;
@@ -50,5 +64,5 @@ int main(int, char**)
     for (int i = 0; i < 11; ++i) {
         std::cout << sr[i] << std::endl;
     }
-    delete[] sr;
+    delete[] sr;*/
 }
