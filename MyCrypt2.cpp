@@ -5,6 +5,7 @@
 #include <vector>
 
 #include <openssl/evp.h>
+#include <openssl/rand.h>
 
 #include "MyCrypt2.h"
 
@@ -54,7 +55,7 @@ int gcm_encrypt(const std::string &plaintext,
     cipherTextLen += len;
 
     // Get the tag.
-    if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_CCM_GET_TAG, 16, tag)) {
+    if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_CCM_GET_TAG, EVP_GCM_TLS_TAG_LEN, tag)) {
         throw std::runtime_error("Get gcm tag error");
     }
 
@@ -127,7 +128,7 @@ int gcm_decrypt(unsigned char *cipherText, int cipherTextLen,
     plainTextLen = len;
 
     // Set expected tag value.
-    if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_TAG, 16, tag)) {
+    if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_TAG, EVP_GCM_TLS_TAG_LEN, tag)) {
         EVP_CIPHER_CTX_free(ctx);
         throw std::runtime_error("Set tag error.");
     }
@@ -147,8 +148,25 @@ int gcm_decrypt(unsigned char *cipherText, int cipherTextLen,
     }
 }
 
+int RandomBytes(unsigned char *randoBytes, int len)
+{
+    int initStatus = RAND_poll();
+    if (initStatus == 1) {
+        int result = RAND_bytes(randoBytes, len);
+        return result;
+    }
+
+    return -1;
+}
+
 void testCrypt2()
 {
+    unsigned char randomBytes[32] = { 0 };
+    int r = RandomBytes(randomBytes, 32);
+    if (r == 1) {
+        auto s = UnsignedCharArrayToHex(randomBytes, 32);
+        std::cout << "Random: " << s << std::endl;
+    }
     // 示例密钥、IV 和待加密数据
     std::string key = "a2V5a2V5a2V5a2V5a2V5a2V5a2V5a2V51";
     std::string iv = "dGltZWNvbnRl";

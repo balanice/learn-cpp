@@ -10,4 +10,6 @@ int gcm_encrypt(const std::string &plaintext,
                 unsigned char *tag);
 
 void testCrypt2();
+
+int RandomBytes(unsigned char *randomBytes, int len);
 #endif
