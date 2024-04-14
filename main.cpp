@@ -1,6 +1,9 @@
 #include <cstring>
 #include <format>
 #include <iostream>
+
+#include <boost/log/trivial.hpp>
+
 #include "curl_test.hpp"
 #include "SingletonData.h"
 #include "database.h"
@@ -12,13 +15,13 @@ int main(int, char**)
     try {
         testCrypt();
     } catch (const std::exception &e) {
-        std::cout << "testCrypt error: " << e.what() << std::endl;
+        BOOST_LOG_TRIVIAL(error) << "testCrypt error: " << e.what();
     }
 
     try {
         testCrypt2();
     } catch (const std::exception &e) {
-        std::cout << "testCrypt2 error: " << e.what() << std::endl;
+        BOOST_LOG_TRIVIAL(error) << "testCrypt2 error: " << e.what();
     }
 
     // std::string s = std::format("hello, {}", 99);
