@@ -24,8 +24,10 @@ int main(int, char**)
         BOOST_LOG_TRIVIAL(error) << "testCrypt2 error: " << e.what();
     }
 
-    // std::string s = std::format("hello, {}", 99);
-    // std::cout << s << std::endl;
+    BOOST_LOG_TRIVIAL(debug) << "sizeof short: " << sizeof (short);
+
+    std::string s = std::format("hello, {}", 99);
+    std::cout << s << std::endl;
     // Post();
 
     // testDb();
