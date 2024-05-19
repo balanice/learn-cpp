@@ -2,7 +2,7 @@
 #include <format>
 #include <iostream>
 
-#include <boost/log/trivial.hpp>
+#include "spdlog/spdlog.h"
 
 #include "curl_test.hpp"
 #include "SingletonData.h"
@@ -10,24 +10,36 @@
 #include "Crypt.h"
 #include "MyCrypt2.h"
 
+void InitLog()
+{
+    spdlog::set_level(spdlog::level::debug); // Set global log level to debug
+    spdlog::debug("This message should be displayed..");    
+    
+    // change log pattern
+    spdlog::set_pattern("[%H:%M:%S.%e] [%n] [%l] [%t] %v");
+}
+
 int main(int, char**)
 {
+    InitLog();
+
     try {
         testCrypt();
     } catch (const std::exception &e) {
-        BOOST_LOG_TRIVIAL(error) << "testCrypt error: " << e.what();
+        spdlog::error("testCrypt error: {}", e.what());
     }
 
     try {
         testCrypt2();
     } catch (const std::exception &e) {
-        BOOST_LOG_TRIVIAL(error) << "testCrypt2 error: " << e.what();
+        spdlog::error("testCrypt2 error: {}", e.what());
     }
 
-    BOOST_LOG_TRIVIAL(debug) << "sizeof short: " << sizeof (short);
-
     std::string s = std::format("hello, {}", 99);
-    std::cout << s << std::endl;
+    spdlog::info("formated string: {}", s);
+
+    int a{ 11 };
+    spdlog::debug("value: {0}, poniter: {1}", a, fmt::ptr(&a));
     // Post();
 
     // testDb();

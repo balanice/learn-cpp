@@ -6,15 +6,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_subdirectory(test)
 
-set(Boost_USE_STATIC_LIBS ON)
-
-find_package(Boost 1.82.0 REQUIRED COMPONENTS log PATHS ~/projects/boost_1_82_0/build/lib/cmake)
-
 include_directories(
     ./include
-    ${Boost_INCLUDE_DIRS}
     )
-link_directories(${Boost_LIBRARY_DIRS})
 
 include(CTest)
 enable_testing()
@@ -41,5 +35,6 @@ target_link_libraries(
     curl
     sqlite3
     crypto
-    ${Boost_LIBRARIES}
+    spdlog
+    fmt
 )
