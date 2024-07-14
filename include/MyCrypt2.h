@@ -12,4 +12,6 @@ int gcm_encrypt(const std::string &plaintext,
 void testCrypt2();
 
 int RandomBytes(unsigned char *randomBytes, int len);
+
+void ReadRsaPubkey();
 #endif

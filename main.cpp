@@ -1,5 +1,6 @@
 #include <cstring>
 #include <format>
+#include <future>
 #include <iostream>
 
 #include "spdlog/spdlog.h"
@@ -9,19 +10,34 @@
 #include "database.h"
 #include "Crypt.h"
 #include "MyCrypt2.h"
+#include <thread>
 
 void InitLog()
 {
     spdlog::set_level(spdlog::level::debug); // Set global log level to debug
-    spdlog::debug("This message should be displayed..");    
-    
+
     // change log pattern
-    spdlog::set_pattern("[%H:%M:%S.%e] [%n] [%l] [%t] %v");
+    spdlog::set_pattern("[%H:%M:%S.%e] [%^%l%$] [thread %t] %v");
+    spdlog::debug("This message should be displayed..");
+}
+
+int SleepResult()
+{
+    spdlog::info("SleepResult");
+    std::chrono::seconds s{3};
+    std::this_thread::sleep_for(s);
+    return 66;
 }
 
 int main(int, char**)
 {
-    InitLog();
+    // InitLog();
+
+    // std::thread t1(InitLog);
+    auto f = std::async(InitLog);
+    // f.get();
+    auto f1 = std::async(SleepResult);
+    spdlog::info("f1: {}", f1.get());
 
     try {
         testCrypt();

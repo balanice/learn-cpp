@@ -6,6 +6,12 @@
 
 #include <openssl/evp.h>
 #include <openssl/rand.h>
+#include <openssl/pem.h>
+#include <openssl/rsa.h>
+#include <openssl/decoder.h>
+#include <openssl/core_names.h>
+
+#include <spdlog/spdlog.h>
 
 #include "MyCrypt2.h"
 
@@ -161,6 +167,7 @@ int RandomBytes(unsigned char *randoBytes, int len)
 
 void testCrypt2()
 {
+    ReadRsaPubkey();
     unsigned char randomBytes[32] = { 0 };
     int r = RandomBytes(randomBytes, 32);
     if (r == 1) {
@@ -195,4 +202,45 @@ void testCrypt2()
     }
 
     delete[] ptr;
+}
+
+EVP_PKEY *get_key(OSSL_LIB_CTX *libctx, const std::string& key, const char* propq)
+{
+    OSSL_DECODER_CTX *dctx = NULL;
+    EVP_PKEY *pkey = NULL;
+    int selection;
+    const unsigned char *data;
+    size_t data_len;
+
+    selection = EVP_PKEY_PUBLIC_KEY;
+    data = (const unsigned char*)key.data();
+    data_len = key.length();
+    dctx = OSSL_DECODER_CTX_new_for_pkey(&pkey, "PEM", NULL, "RSA",
+                                         selection, libctx, propq);
+    (void)OSSL_DECODER_from_data(dctx, &data, &data_len);
+    OSSL_DECODER_CTX_free(dctx);
+    return pkey;
+}
+
+void ReadRsaPubkey()
+{
+    std::string key = "-----BEGIN RSA PUBLIC KEY-----\nMIIBCAKCAQEAwDpa2EOEu7vCx88mVXzLHxdw1Yn0Hm7gkUEdnzdXzPenbL4NVLoj\n6lxtX2UQ10wZLQfHuv5elaBn9jkCxpZgb9zkD3hKqmVLJI6HXRi2OECEnOp0Edus\ncrCr3N/FXvf7ALT4i9LeUlfmUmTB+kIR7VpyPY2Pg88DvA5n7QXQRRqRu8d3NBXF\nZhB9nZd8Zb8XyTStKLwwd11e7JV4vUTiA3heoNnSsBEeLN1DWdQNjCqq35AFP2yd\nM1pncM4Zjhbyv0z0l776vCJyS4/iS78qund4i1dxp2l4gDoDuTd4Nck6oN/HC9Ba\nnuIqrv/RP0Sw01Dij7g59nVxYA1aN8cvxQIBAw==\n-----END RSA PUBLIC KEY-----\n";
+
+    // 添加必要的换行符和头尾标识，如果公钥字符串中还没有的话
+    // std::string formattedPublicKey = "-----BEGIN PUBLIC KEY-----\n";
+    // for (size_t i = 0; i < key.size(); i += 64) {
+    //     formattedPublicKey += key.substr(i, 64);
+    //     formattedPublicKey += "\n";
+    // }
+    // formattedPublicKey += "-----END PUBLIC KEY-----\n";
+    // spdlog::debug("formatted: {}", formattedPublicKey);
+    OSSL_LIB_CTX *ctx = nullptr;
+    const char *propq = NULL;
+    auto rsa = get_key(ctx, key, propq);
+    if (rsa == NULL) {
+        spdlog::error("Failed to load RSA public key");
+    } else {
+        spdlog::debug("Sucess to load RSA public key");
+    }
+
 }
