@@ -4,15 +4,13 @@ project(learn-cpp VERSION 0.1.0 LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_subdirectory(test)
+# add_subdirectory(test)
 
 include_directories(
     ./include
     )
 
 include(CTest)
-enable_testing()
-
 enable_testing()
 
 add_executable(
@@ -23,6 +21,9 @@ add_executable(
     StatementWrapper.cpp
     Crypt.cpp
     MyCrypt2.cpp
+    src/AutoPtrTest.cpp
+    src/curl_test2.cpp
+    src/JsonTest.cpp
 )
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
@@ -37,4 +38,5 @@ target_link_libraries(
     crypto
     spdlog
     fmt
+    cjson
 )

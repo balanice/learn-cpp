@@ -11,11 +11,14 @@
 #include "Crypt.h"
 #include "MyCrypt2.h"
 #include <thread>
+#include "AutoPtrTest.h"
+#include "curl_test2.h"
+#include "Widget.h"
+#include "JsonTest.h"
 
 void InitLog()
 {
     spdlog::set_level(spdlog::level::debug); // Set global log level to debug
-
     // change log pattern
     spdlog::set_pattern("[%H:%M:%S.%e] [%^%l%$] [thread %t] %v");
     spdlog::debug("This message should be displayed..");
@@ -29,7 +32,7 @@ int SleepResult()
     return 66;
 }
 
-int main(int, char**)
+int main(int, char **)
 {
     // InitLog();
 
@@ -38,6 +41,18 @@ int main(int, char**)
     // f.get();
     auto f1 = std::async(SleepResult);
     spdlog::info("f1: {}", f1.get());
+
+    Widget w{11, true};
+    Widget w2(11, true);
+
+    std::vector<int> v1(10, 20);
+    spdlog::info("v1.size: {}", v1.size());
+
+    std::vector<int> v2{10, 20};
+    spdlog::info("v2.size: {}", v2.size());
+
+    TestJson();
+    /*test2();
 
     try {
         testCrypt();
@@ -56,6 +71,8 @@ int main(int, char**)
 
     int a{ 11 };
     spdlog::debug("value: {0}, poniter: {1}", a, fmt::ptr(&a));
+
+    TestAutoPtr();*/
     // Post();
 
     // testDb();
