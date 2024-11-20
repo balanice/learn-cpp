@@ -1,5 +1,7 @@
+#include "StatementWrapper.h"
+
 #include <iostream>
-#include "include/StatementWrapper.h"
+#include <spdlog/spdlog.h>
 
 StatementWrapper::StatementWrapper(const std::shared_ptr<sqlite3> databse, const std::string& sql) :
     db(databse.get())
@@ -14,7 +16,7 @@ std::shared_ptr<sqlite3_stmt> StatementWrapper::prepareStmt()
     const int res = sqlite3_prepare_v2(db, query.c_str(), static_cast<int>(query.size()), &stmt, nullptr);
     if (res != SQLITE_OK) {
         auto msg = sqlite3_errmsg(db);
-        std::cout << "prepare failed:" << msg << ", errCode: " << res << std::endl;
+        spdlog::error("prepare failed: {}, errorCode: {}", msg, res);
     }
     return std::shared_ptr<sqlite3_stmt>(stmt, [](sqlite3_stmt *stmt) {
         sqlite3_finalize(stmt);
@@ -30,7 +32,7 @@ void StatementWrapper::check(const int ret) const
 {
     if (ret != SQLITE_OK) {
         auto msg = sqlite3_errmsg(db);
-        std::cout << "Check failed: " << msg << std::endl;
+        spdlog::error("Check failed: {}", msg);
     }
 }
 

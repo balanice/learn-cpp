@@ -2,8 +2,8 @@
 #define STATEMENT_WRAPPER_H
 
 #include <memory>
-#include <string>
 #include <sqlite3.h>
+#include <string>
 
 class StatementWrapper
 {

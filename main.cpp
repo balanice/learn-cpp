@@ -20,8 +20,7 @@ void InitLog()
 {
     spdlog::set_level(spdlog::level::debug); // Set global log level to debug
     // change log pattern
-    spdlog::set_pattern("[%H:%M:%S.%e] [%^%l%$] [thread %t] %v");
-    spdlog::debug("This message should be displayed..");
+    spdlog::set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%^%l%$] [thread %t] %v");
 }
 
 int SleepResult()
@@ -34,12 +33,9 @@ int SleepResult()
 
 int main(int, char **)
 {
-    // InitLog();
+    InitLog();
 
-    // std::thread t1(InitLog);
-    auto f = std::async(InitLog);
-    // f.get();
-    auto f1 = std::async(SleepResult);
+    /*auto f1 = std::async(SleepResult);
     spdlog::info("f1: {}", f1.get());
 
     Widget w{11, true};
@@ -51,10 +47,10 @@ int main(int, char **)
     std::vector<int> v2{10, 20};
     spdlog::info("v2.size: {}", v2.size());
 
-    TestJson();
-    /*test2();
+    TestJson();*/
+    test2();
 
-    try {
+    /*try {
         testCrypt();
     } catch (const std::exception &e) {
         spdlog::error("testCrypt error: {}", e.what());
@@ -85,21 +81,23 @@ int main(int, char **)
     // SingletonData::GetInstance().Put(tag, value);
     // SingletonData::GetInstance().Size(tag);
 
-    /*MyDatabase db;
-    db.CreateTable();
-    if (db.Insert()) {
-        std::cout << "Insert success" << std::endl;
-    }
-    db.Query();
-    if (db.Delete(1)) {
-        std::cout << "delete id 1 success" << std::endl;
-    }
-    std::cout << std::endl;
-    db.Query();
+    // MyDatabase db;
+    // if (db.NeedUpgrade()) {
+    //     spdlog::info("Need upgrade");
+    // }
+    // db.CreateTable();
+    // if (db.Insert()) {
+    //     spdlog::info("Insert success");
+    // }
+    // db.Query();
+    // if (db.Delete(1)) {
+    //     std::cout << "delete id 1 success" << std::endl;
+    // }
+    // db.Query();
 
-    db.~MyDatabase();
+    // db.~MyDatabase();
 
-    int* ar = new int[12];
+    /*int* ar = new int[12];
     std::memset(ar, 99, sizeof ar);
     std::cout << "before for" << std::endl;
     for (int i = 0; i < 12; ++i) {

@@ -32,11 +32,12 @@ void test2()
     curl_easy_setopt(eh, CURLOPT_WRITEFUNCTION, write_cb);
     curl_easy_setopt(eh, CURLOPT_URL, "http://www.baidu.com");
     curl_easy_setopt(eh, CURLOPT_PRIVATE, "http://www.baidu.com");
+    curl_easy_setopt(eh, CURLOPT_SSL_VERIFYPEER, 1);
+    curl_easy_setopt(eh, CURLOPT_SSL_VERIFYHOST, 1);
     curl_multi_add_handle(cm, eh);
 
     spdlog::info("test2");
-    do
-    {
+    do {
         int still_alive = 1;
         curl_multi_perform(cm, &still_alive);
 
@@ -52,8 +53,6 @@ void test2()
                 spdlog::info("R: {}, {}, {}", static_cast<int>(msg->data.result), curl_easy_strerror(msg->data.result),
                              url);
 
-                // fprintf(stderr, "R: %d - %s <%s>\n",
-                // msg->data.result, curl_easy_strerror(msg->data.result), url);
                 curl_multi_remove_handle(cm, e);
                 curl_easy_cleanup(e);
                 left--;

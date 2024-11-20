@@ -8,6 +8,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include_directories(
     ./include
+    /usr/include/fmt
     )
 
 include(CTest)
@@ -17,8 +18,8 @@ add_executable(
     learn-cpp
     main.cpp
     SingletonData.cpp
-    database.cpp
-    StatementWrapper.cpp
+    src/database.cpp
+    src/StatementWrapper.cpp
     Crypt.cpp
     MyCrypt2.cpp
     src/AutoPtrTest.cpp
