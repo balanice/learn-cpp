@@ -15,6 +15,7 @@
 #include "curl_test2.h"
 #include "Widget.h"
 #include "JsonTest.h"
+#include "Utils.h"
 
 void InitLog()
 {
@@ -49,6 +50,10 @@ int main(int, char **)
 
     TestJson();*/
     test2();
+
+    std::string path{"~/a.cpp"};
+    spdlog::info("exists: {}", Exists(path));
+    spdlog::info("exists: {}", Exists("/home/force/aur/visual-studio-code-bin"));
 
     /*try {
         testCrypt();

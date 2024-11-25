@@ -25,6 +25,7 @@ add_executable(
     src/AutoPtrTest.cpp
     src/curl_test2.cpp
     src/JsonTest.cpp
+    src/Utils.cpp
 )
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
