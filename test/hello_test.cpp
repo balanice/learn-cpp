@@ -1,12 +1,13 @@
-#include "../include/sort.h"
-#include <gtest/gtest.h>
+#include "Utils.h"
 
-TEST(HelloTest, BasicAssertions)
+#include <spdlog/spdlog.h>
+
+int main()
 {
-    EXPECT_STRNE("hello", "world");
-    EXPECT_EQ(7*6, 42);
-
-    int arr[3] = {1, 3, 2};
-    BubbleSort(arr, 3);
-    EXPECT_EQ(arr[2], 3);
+    auto count = GetCores();
+    spdlog::info("cores: {}", count);
+    if (count == 4) {
+        return 0;
+    }
+    return 1;
 }

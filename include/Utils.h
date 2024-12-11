@@ -5,4 +5,6 @@
 
 bool Exists(const std::string &file);
 
+unsigned int GetCores();
+
 #endif
