@@ -1,2 +1,11 @@
 build/
 .vscode/
+CMakeFiles/
+*.cmake
+*.log
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.dylib
