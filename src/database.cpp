@@ -30,7 +30,8 @@ MyDatabase::~MyDatabase()
 
 bool MyDatabase::CreateTable()
 {
-    if (Exists(TABLE_COMPANY)) {
+    if (Exists(TABLE_COMPANY))
+    {
         spdlog::info("table already exists");
         return true;
     }
@@ -81,16 +82,17 @@ void MyDatabase::Query()
     }
 }
 
-bool MyDatabase::Exists(const std::string& tableName)
+bool MyDatabase::Exists(const std::string &tableName)
 {
     const std::string sql = "select name from sqlite_master where type='table'";
     StatementWrapper st{database, sql};
-    // st.Bind(1, tableName);
-    int valueIndex{ 0 };
-    while (st.Step() == SQLITE_ROW) {
+    int valueIndex{0};
+    while (st.Step() == SQLITE_ROW)
+    {
         std::string v = st.ColumnText(valueIndex);
         spdlog::info("v: {}", v);
-        if (v == tableName) {
+        if (v == tableName)
+        {
             return true;
         }
     }
@@ -104,14 +106,15 @@ bool MyDatabase::Upgrade()
 
 bool MyDatabase::NeedUpgrade()
 {
-    if (!Exists("db_version")) {
+    if (!Exists("db_version"))
+    {
         spdlog::info("db_version not exists");
         return true;
     }
     const std::string sql = "select version from " + TABLE_VERSION;
     StatementWrapper st(database, sql);
-    // st.Bind(1, "db_version");
-    if (st.Step() == SQLITE_ROW) {
+    if (st.Step() == SQLITE_ROW)
+    {
         auto v = st.ColumnInt(0);
         spdlog::info("db version: {}", v);
         return false;

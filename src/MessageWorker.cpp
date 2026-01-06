@@ -1,4 +1,7 @@
 #include "MessageWorker.h"
+
+#include "database.h"
+
 #include <mutex>
 #include <optional>
 #include <spdlog/spdlog.h>
@@ -9,10 +12,12 @@ void MessageWorker::processMessage(const Message &msg) {
         if constexpr (std::is_same_v<T, WriteMessage>) {
             // 处理写消息
             spdlog::info("Writing key: {}, value: {}", arg.key, arg.value);
+            db_.Insert(); // 示例调用，实际应传递参数
             // db_.write(arg.key, arg.value); // 假设 LocalDatabase 有 write 方法
         } else if constexpr (std::is_same_v<T, ReportMessage>) {
             // 处理上报消息
             spdlog::info("Reporting from tag: {}", arg.tag);
+            db_.Query(); // 示例调用
             // db_.report(arg.tag); // 假设 LocalDatabase 有 report 方法
         }
     }, msg);
@@ -66,8 +71,12 @@ void MessageWorker::stop(bool drain) {
     }
 }
 
-MessageWorker::MessageWorker() : stop_(false) {
+MessageWorker::MessageWorker() : stop_(false), db_() {
     worker_thread_ = std::thread(&MessageWorker::run, this);
+    auto create = db_.CreateTable();
+    if (!create) {
+        spdlog::error("Failed to create necessary tables in database.");
+    }
 }
 
 MessageWorker::~MessageWorker() {

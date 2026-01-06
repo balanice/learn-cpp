@@ -2,7 +2,7 @@
 #define MESSAGEWORKER_H
 
 #include "Message.h"
-
+#include "database.h"
 #include <iostream>
 #include <thread>
 #include <condition_variable>
@@ -31,7 +31,7 @@ private:
     std::atomic<bool> stop_{false};
     bool drain_ = true;
 
-    //LocalDatabase db_; // 每个 worker 拥有自己的 DB（或可设为全局）
+    MyDatabase db_; // 每个 worker 拥有自己的 DB（或可设为全局）
 };
 
 #endif // MESSAGEWORKER_H
