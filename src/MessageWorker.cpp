@@ -12,13 +12,15 @@ void MessageWorker::processMessage(const Message &msg) {
         if constexpr (std::is_same_v<T, WriteMessage>) {
             // 处理写消息
             spdlog::info("Writing key: {}, value: {}", arg.key, arg.value);
-            db_.Insert(); // 示例调用，实际应传递参数
-            // db_.write(arg.key, arg.value); // 假设 LocalDatabase 有 write 方法
+            db_.InsertMessage(arg); // 示例调用，实际应传递参数
         } else if constexpr (std::is_same_v<T, ReportMessage>) {
             // 处理上报消息
             spdlog::info("Reporting from tag: {}", arg.tag);
-            db_.Query(); // 示例调用
-            // db_.report(arg.tag); // 假设 LocalDatabase 有 report 方法
+            db_.QueryMessages(); // 示例调用
+            auto messages = db_.QueryMessages();
+            for (const auto& m : messages) {
+                spdlog::info("Message - key: {}, value: {}", m.key, m.value);
+            }
         }
     }, msg);
 }
