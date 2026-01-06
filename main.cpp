@@ -16,9 +16,9 @@ int main(int, char **)
 
     spdlog::info("Starting MessageWorker test...");
     MessageWorker worker;
-    worker.submit(WriteMessage{"key1", "value1"});
+    worker.submit(WriteMessage{-1, "key1", "value1"});
     worker.submit(ReportMessage{"tagA"});
-    worker.submit(WriteMessage{"key2", "value2"});
+    worker.submit(WriteMessage{-1, "key2", "value2"});
     std::this_thread::sleep_for(std::chrono::seconds(2));
     worker.stop();
     spdlog::info("MessageWorker test finished.");

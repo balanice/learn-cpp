@@ -5,6 +5,7 @@
 #include <variant>
 
 struct WriteMessage {
+    int id;
     std::string key;
     std::string value;
 };

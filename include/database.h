@@ -24,6 +24,7 @@ public:
     // Message operations
     bool InsertMessage(const WriteMessage& msg);
     std::vector<WriteMessage> QueryMessages();
+    int DeleteMessage(int id);
 
 private:
     bool Exists(const std::string& tableName);

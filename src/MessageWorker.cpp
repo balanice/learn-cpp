@@ -19,7 +19,7 @@ void MessageWorker::processMessage(const Message &msg) {
             db_.QueryMessages(); // 示例调用
             auto messages = db_.QueryMessages();
             for (const auto& m : messages) {
-                spdlog::info("Message - key: {}, value: {}", m.key, m.value);
+                spdlog::info("Message - id: {}, key: {}, value: {}", m.id, m.key, m.value);
             }
         }
     }, msg);

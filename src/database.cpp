@@ -56,16 +56,27 @@ bool MyDatabase::InsertMessage(const WriteMessage &msg)
 std::vector<WriteMessage> MyDatabase::QueryMessages()
 {
     std::vector<WriteMessage> messages;
-    std::string sql = "SELECT key, value FROM messages;";
+    std::string sql = "SELECT id, key, value FROM messages;";
     StatementWrapper wrapper(database, sql);
     while (wrapper.Step() == SQLITE_ROW)
     {
         WriteMessage m;
-        m.key = wrapper.ColumnText(0);
-        m.value = wrapper.ColumnText(1);
+        m.id = wrapper.ColumnInt(0);
+        m.key = wrapper.ColumnText(1);
+        m.value = wrapper.ColumnText(2);
         messages.push_back(std::move(m));
     }
     return messages;
+}
+
+int MyDatabase::DeleteMessage(int id) {
+    std::string sql = "DELETE FROM messages WHERE id = ?;";
+    StatementWrapper wrapper(database, sql);
+    wrapper.Bind(1, static_cast<int64_t>(id));
+    if (wrapper.Step() == SQLITE_DONE) {
+        return sqlite3_changes(database.get());
+    }
+    return -1;
 }
 
 bool MyDatabase::Exists(const std::string& tableName) {
