@@ -22,10 +22,12 @@ add_executable(
     src/StatementWrapper.cpp
     Crypt.cpp
     MyCrypt2.cpp
+    src/KeyManager.cpp
     src/curl_test2.cpp
     src/JsonTest.cpp
     src/Utils.cpp
     src/MessageWorker.cpp
+    src/Config.cpp
 )
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})

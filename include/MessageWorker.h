@@ -17,6 +17,9 @@ public:
 
     void submit(Message msg);
 
+    // Enable decryption using a work key (raw bytes)
+    void setWorkKey(const std::vector<unsigned char>& workKey);
+
     // 停止：drain=true 则处理完剩余消息；false 则立即退出
     void stop(bool drain = true);
 
@@ -32,6 +35,10 @@ private:
     bool drain_ = true;
 
     MyDatabase db_; // 每个 worker 拥有自己的 DB（或可设为全局）
+
+    // decryption support
+    bool decryptEnabled_ = false;
+    std::vector<unsigned char> workKey_;
 };
 
 #endif // MESSAGEWORKER_H

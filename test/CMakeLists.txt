@@ -20,3 +20,41 @@ add_test(
     NAME hello_test
     COMMAND hello_test
 )
+
+add_executable(
+    key_manager_demo
+    key_manager_demo.cpp
+    ../src/KeyManager.cpp
+)
+
+target_link_libraries(
+    key_manager_demo
+    spdlog
+    crypto
+    fmt
+)
+
+add_test(
+    NAME key_manager_demo
+    COMMAND key_manager_demo
+)
+
+add_executable(
+    storage_test
+    storage_test.cpp
+    ../src/Storage.cpp
+    ../src/KeyManager.cpp
+    ../src/Config.cpp
+)
+
+target_link_libraries(
+    storage_test
+    spdlog
+    crypto
+    sqlite3
+)
+
+add_test(
+    NAME storage_test
+    COMMAND storage_test
+)

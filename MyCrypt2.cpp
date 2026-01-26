@@ -3,6 +3,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <vector>
+#include <fstream>
 
 #include <openssl/evp.h>
 #include <openssl/rand.h>
@@ -10,6 +11,7 @@
 #include <openssl/rsa.h>
 #include <openssl/decoder.h>
 #include <openssl/core_names.h>
+#include <openssl/kdf.h>
 
 #include <spdlog/spdlog.h>
 
@@ -168,12 +170,37 @@ int RandomBytes(unsigned char *randoBytes, int len)
 void testCrypt2()
 {
     ReadRsaPubkey();
+    
+    // Test 1: Generate random bytes and display as hex
+    spdlog::info("\n=== Test 1: Generate Random Bytes ===" );
     unsigned char randomBytes[32] = { 0 };
     int r = RandomBytes(randomBytes, 32);
     if (r == 1) {
         auto s = UnsignedCharArrayToHex(randomBytes, 32);
-        std::cout << "Random: " << s << std::endl;
+        spdlog::info("Random bytes (hex): {}", s);
     }
+    
+    // Test 2: Generate root key and save to file
+    spdlog::info("=== Test 2: Generate Root Key and Save ===" );
+    std::string rootKeyFile = "root_key.hex";
+    if (GenerateAndSaveRootKey(rootKeyFile, 32, 100000)) {
+        spdlog::info("Root key saved to: {}", rootKeyFile);
+    }
+    
+    // Test 3: Read the saved file
+    spdlog::info("\n=== Test 3: Read Saved Root Key ===" );
+    std::ifstream file(rootKeyFile);
+    if (file.is_open() && file.good()) {
+        std::string content{std::istreambuf_iterator<char>(file),
+                           {}};
+        file.close();
+        spdlog::info("Saved root key content: {}", content);
+        spdlog::info("Root key length (hex chars): {}", content.length() );
+        spdlog::info("Root key length (bytes): {}", content.length() / 2 );
+    }
+    
+    // Test 4: GCM encryption/decryption
+    spdlog::info("\n=== Test 4: GCM Encryption/Decryption ===" );
     // 示例密钥、IV 和待加密数据
     std::string key = "a2V5a2V5a2V5a2V5a2V5a2V5a2V5a2V51";
     std::string iv = "dGltZWNvbnRl";
@@ -181,24 +208,26 @@ void testCrypt2()
     unsigned char cipherText[100] = { 0 };
     unsigned char pText[100] = { 0 };
     unsigned char tag[100] = { 0 };
-    std::cout << "Original plaintext: " << plaintext << std::endl;
+    spdlog::info("Original plaintext: {}", plaintext );
 
     // 加密数据
     int cipherTextLength = gcm_encrypt(plaintext, key, iv, cipherText, tag);
-    std::cout << "cipherTextLength: " << cipherTextLength << std::endl;
+    spdlog::info("cipherTextLength: {}", cipherTextLength );
     auto tagHex = UnsignedCharArrayToHex(tag, 16);
-    std::cout << "tag: " << tagHex << std::endl;
+    spdlog::info("tag: {}", tagHex );
     auto cipherHex = UnsignedCharArrayToHex(cipherText, cipherTextLength);
-    std::cout << "Encrypted text: " << cipherHex << std::endl;
-
+    spdlog::info("Encrypted text: {}", cipherHex );
     auto v = HexStringToBytes(cipherHex);
     unsigned char* ptr = new unsigned char[v.size()];
     std::copy(v.begin(), v.end(), ptr);
 
     int ret = gcm_decrypt(ptr, v.size(), tag, key, iv, pText);
     if (ret != -1) {
-        std::cout << "Decrypted text: " << pText << std::endl;
-        std::cout << "Decrypted text length: " << ret << std::endl;
+        std::string_view view(reinterpret_cast<const char*>(pText));
+        spdlog::info("Decrypted text: {}", view);
+        spdlog::info("Decrypted text length: {}", ret);
+    } else {
+        spdlog::error("Decryption failed: Tag verification failed.");
     }
 
     delete[] ptr;
@@ -243,4 +272,96 @@ void ReadRsaPubkey()
         spdlog::debug("Sucess to load RSA public key");
     }
 
+}
+
+// Generate random bytes and return as vector
+std::vector<unsigned char> GenerateRandomBytes(size_t length)
+{
+    std::vector<unsigned char> buffer(length);
+    int result = RandomBytes(buffer.data(), length);
+    
+    if (result != 1) {
+        throw std::runtime_error("Failed to generate random bytes");
+    }
+    
+    return buffer;
+}
+
+// Generate root key from random bytes using PBKDF2
+std::string GenerateRootKey(size_t keyLength, size_t iterations)
+{
+    // Generate random password (16 bytes)
+    auto password = GenerateRandomBytes(16);
+    
+    // Generate random salt (16 bytes)
+    auto salt = GenerateRandomBytes(16);
+    
+    // Derived key buffer
+    std::vector<unsigned char> derivedKey(keyLength);
+    
+    // Use PBKDF2 with HMAC-SHA256
+    int result = PKCS5_PBKDF2_HMAC(
+        reinterpret_cast<const char*>(password.data()), 
+        password.size(),
+        salt.data(), 
+        salt.size(),
+        iterations,
+        EVP_sha256(),
+        keyLength,
+        derivedKey.data()
+    );
+    
+    if (result != 1) {
+        throw std::runtime_error("PBKDF2 derivation failed");
+    }
+    
+    // Convert derived key to hex string
+    std::string derivedKeyHex = UnsignedCharArrayToHex(derivedKey.data(), derivedKey.size());
+    
+    // Log salt and password for reference (salt and password should be stored separately if needed for re-derivation)
+    std::string saltHex = UnsignedCharArrayToHex(salt.data(), salt.size());
+    std::string passwordHex = UnsignedCharArrayToHex(password.data(), password.size());
+    
+    spdlog::info("PBKDF2 derivation complete:");
+    spdlog::info("  Iterations: {}", iterations);
+    spdlog::info("  Password (hex): {}", passwordHex);
+    spdlog::info("  Salt (hex): {}", saltHex);
+    spdlog::info("  Derived Key Length: {} bytes", keyLength);
+    
+    return derivedKeyHex;
+}
+
+// Save hex string to file
+bool SaveHexToFile(const std::string& hexString, const std::string& filename)
+{
+    try {
+        std::ofstream file(filename, std::ios::binary);
+        if (!file.is_open()) {
+            spdlog::error("Failed to open file: {}", filename);
+            return false;
+        }
+        
+        file << hexString;
+        file.close();
+        spdlog::info("Successfully saved hex string to file: {}", filename);
+        return true;
+    } catch (const std::exception& e) {
+        spdlog::error("Error saving to file: {}", e.what());
+        return false;
+    }
+}
+
+// Generate and save root key to file
+bool GenerateAndSaveRootKey(const std::string& filename, size_t keyLength, size_t iterations)
+{
+    try {
+        std::string rootKey = GenerateRootKey(keyLength, iterations);
+        spdlog::info("Generated root key (PBKDF2 derived, hex): {}", rootKey);
+        spdlog::info("Generated root key with {} bytes using {} PBKDF2 iterations", keyLength, iterations);
+        
+        return SaveHexToFile(rootKey, filename);
+    } catch (const std::exception& e) {
+        spdlog::error("Error generating root key: {}", e.what());
+        return false;
+    }
 }
