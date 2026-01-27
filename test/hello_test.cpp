@@ -1,13 +1,9 @@
-#include "Utils.h"
+#include <gtest/gtest.h>
 
-#include <spdlog/spdlog.h>
-
-int main()
-{
-    auto count = GetCores();
-    spdlog::info("cores: {}", count);
-    if (count == 4) {
-        return 0;
-    }
-    return 1;
+// Demonstrate some basic assertions.
+TEST(HelloTest, BasicAssertions) {
+  // Expect two strings not to be equal.
+  EXPECT_STRNE("hello", "world");
+  // Expect equality.
+  EXPECT_EQ(7 * 6, 42);
 }

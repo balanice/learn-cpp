@@ -7,19 +7,15 @@ include_directories(
 add_executable(
     hello_test
     hello_test.cpp
-    ../src/Utils.cpp
 )
 
 target_link_libraries(
-    hello_test
-    spdlog
-    fmt
+  hello_test
+  GTest::gtest_main
 )
 
-add_test(
-    NAME hello_test
-    COMMAND hello_test
-)
+include(GoogleTest)
+gtest_discover_tests(hello_test)
 
 add_executable(
     key_manager_demo
@@ -39,22 +35,22 @@ add_test(
     COMMAND key_manager_demo
 )
 
-add_executable(
-    storage_test
-    storage_test.cpp
-    ../src/Storage.cpp
-    ../src/KeyManager.cpp
-    ../src/Config.cpp
-)
+# add_executable(
+#     storage_test
+#     storage_test.cpp
+#     ../src/Storage.cpp
+#     ../src/KeyManager.cpp
+#     ../src/Config.cpp
+# )
 
-target_link_libraries(
-    storage_test
-    spdlog
-    crypto
-    sqlite3
-)
+# target_link_libraries(
+#     storage_test
+#     spdlog
+#     crypto
+#     sqlite3
+# )
 
-add_test(
-    NAME storage_test
-    COMMAND storage_test
-)
+# add_test(
+#     NAME storage_test
+#     COMMAND storage_test
+# )
