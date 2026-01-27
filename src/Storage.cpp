@@ -47,8 +47,8 @@ Storage::Storage(const Config& cfg)
 
     if (encrypt_) {
         // Initialize KeyManager with a seed file under storage path and get/create work key
-        std::string seedFile = std::filesystem::path(storagePath_) / "seed.bin";
-        std::string workKeyFile = std::filesystem::path(storagePath_) / "work_key.bin";
+        std::string seedFile = (std::filesystem::path(storagePath_) / "seed.bin").string();
+        std::string workKeyFile = (std::filesystem::path(storagePath_) / "work_key.bin").string();
         try {
             auto &km = KeyManager::Instance();
             km.Initialize(seedFile, 32, 100000);

@@ -28,6 +28,7 @@ add_executable(
     src/Utils.cpp
     src/MessageWorker.cpp
     src/Config.cpp
+    src/Storage.cpp
 )
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
