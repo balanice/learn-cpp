@@ -8,7 +8,7 @@
 TEST(KeyManagerTest, BasicAssertions)
 {
     auto &km = KeyManager::Instance();
-    km.Initialize("seed.bin", 32, 100000);
+    km.Initialize("seed.bin");
     auto hex = km.GetRootKeyHex();
     spdlog::info("Root key hex: {}", hex);
 

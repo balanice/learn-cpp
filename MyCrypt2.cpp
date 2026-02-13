@@ -183,7 +183,7 @@ void testCrypt2()
     // Test 2: Generate root key and save to file
     spdlog::info("=== Test 2: Generate Root Key and Save ===" );
     std::string rootKeyFile = "root_key.hex";
-    if (GenerateAndSaveRootKey(rootKeyFile, 32, 100000)) {
+    if (GenerateAndSaveRootKey(rootKeyFile, KeyManager::kDefaultRootKeyLen, KeyManager::kDefaultPbkdf2Iterations)) {
         spdlog::info("Root key saved to: {}", rootKeyFile);
     }
     
@@ -213,7 +213,7 @@ void testCrypt2()
     // 加密数据
     int cipherTextLength = gcm_encrypt(plaintext, key, iv, cipherText, tag);
     spdlog::info("cipherTextLength: {}", cipherTextLength );
-    auto tagHex = UnsignedCharArrayToHex(tag, 16);
+    auto tagHex = UnsignedCharArrayToHex(tag, KeyManager::kGcmTagLen);
     spdlog::info("tag: {}", tagHex );
     auto cipherHex = UnsignedCharArrayToHex(cipherText, cipherTextLength);
     spdlog::info("Encrypted text: {}", cipherHex );

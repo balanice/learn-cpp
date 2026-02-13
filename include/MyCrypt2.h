@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include "KeyManager.h"
 
 int gcm_encrypt(const std::string &plaintext,
                 const std::string &key,
@@ -28,12 +29,12 @@ void ReadRsaPubkey();
 std::vector<unsigned char> GenerateRandomBytes(size_t length);
 
 // Generate root key from random bytes using PBKDF2
-std::string GenerateRootKey(size_t keyLength = 32, size_t iterations = 100000);
+std::string GenerateRootKey(size_t keyLength = KeyManager::kDefaultRootKeyLen, size_t iterations = KeyManager::kDefaultPbkdf2Iterations);
 
 // Save hex string to file
 bool SaveHexToFile(const std::string& hexString, const std::string& filename);
 
 // Generate and save root key to file using PBKDF2
-bool GenerateAndSaveRootKey(const std::string& filename, size_t keyLength = 32, size_t iterations = 100000);
+bool GenerateAndSaveRootKey(const std::string& filename, size_t keyLength = KeyManager::kDefaultRootKeyLen, size_t iterations = KeyManager::kDefaultPbkdf2Iterations);
 
 #endif

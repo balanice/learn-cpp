@@ -142,7 +142,7 @@ std::vector<unsigned char> KeyManager::DeriveWorkKey(const std::string& info, si
 
 // --- AES-GCM helpers and encrypted file storage for work keys ---
 static std::vector<unsigned char> Sha256(const std::vector<unsigned char>& data) {
-    std::vector<unsigned char> out(32);
+    std::vector<unsigned char> out(KeyManager::kSha256Len);
     EVP_MD_CTX *md = EVP_MD_CTX_new();
     EVP_DigestInit_ex(md, EVP_sha256(), NULL);
     EVP_DigestUpdate(md, data.data(), data.size());
@@ -157,9 +157,9 @@ static bool aesGcmEncrypt(const std::vector<unsigned char>& key32,
                           std::vector<unsigned char>& iv,
                           std::vector<unsigned char>& ciphertext,
                           std::vector<unsigned char>& tag) {
-    const size_t ivlen = 12; // recommended IV length for GCM
+    const size_t ivlen = KeyManager::kGcmIvLen; // recommended IV length for GCM
     iv = GenerateRandomBytes(ivlen);
-    tag.assign(16, 0);
+    tag.assign(KeyManager::kGcmTagLen, 0);
     ciphertext.assign(plaintext.size(), 0);
 
     EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
@@ -177,7 +177,7 @@ static bool aesGcmEncrypt(const std::vector<unsigned char>& key32,
     if (1 != EVP_EncryptFinal_ex(ctx, ciphertext.data() + len, &len2)) { EVP_CIPHER_CTX_free(ctx); return false; }
     ciphertext.resize(len + len2);
 
-    if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_GET_TAG, 16, tag.data())) { EVP_CIPHER_CTX_free(ctx); return false; }
+    if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_GET_TAG, (int)KeyManager::kGcmTagLen, tag.data())) { EVP_CIPHER_CTX_free(ctx); return false; }
 
     EVP_CIPHER_CTX_free(ctx);
     return true;
@@ -245,11 +245,11 @@ bool KeyManager::ReadEncryptedWorkKey(const std::string& path, std::vector<unsig
 
     std::vector<unsigned char> buf((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
     spdlog::debug("ReadEncryptedWorkKey: raw buf size={}", buf.size());
-    if (buf.size() < 12 + 16) return false;
+    if (buf.size() < KeyManager::kGcmIvLen + KeyManager::kGcmTagLen) return false;
 
-    std::vector<unsigned char> iv(buf.begin(), buf.begin() + 12);
-    std::vector<unsigned char> tag(buf.begin() + 12, buf.begin() + 12 + 16);
-    std::vector<unsigned char> ciphertext(buf.begin() + 12 + 16, buf.end());
+    std::vector<unsigned char> iv(buf.begin(), buf.begin() + KeyManager::kGcmIvLen);
+    std::vector<unsigned char> tag(buf.begin() + KeyManager::kGcmIvLen, buf.begin() + KeyManager::kGcmIvLen + KeyManager::kGcmTagLen);
+    std::vector<unsigned char> ciphertext(buf.begin() + KeyManager::kGcmIvLen + KeyManager::kGcmTagLen, buf.end());
 
     spdlog::debug("ReadEncryptedWorkKey: iv={}, tag={}, ciphertext={}", iv.size(), tag.size(), ciphertext.size());
 

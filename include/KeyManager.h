@@ -12,12 +12,21 @@
 
 class KeyManager {
 public:
+    // sizes / defaults
+    static constexpr size_t kSha256Len = 32;                      // SHA-256 digest size (bytes)
+    static constexpr size_t kDefaultRootKeyLen = 32;              // default root/work key length (bytes)
+    static constexpr size_t kDefaultPbkdf2Iterations = 100000;    // default PBKDF2 iteration count
+
+    // AES-GCM parameters
+    static constexpr size_t kGcmIvLen = 12;                       // recommended IV length for GCM (96 bits)
+    static constexpr size_t kGcmTagLen = 16;                      // GCM authentication tag length (bytes)
+
     // Get the singleton instance
     static KeyManager& Instance();
 
     // Initialize with a path to store the seed and PBKDF2 iterations.
     // If the seed file exists it will be loaded; otherwise a new seed will be generated and saved.
-    void Initialize(const std::string& seedFilePath, size_t rootKeyLenBytes = 32, size_t pbkdf2Iterations = 100000);
+    void Initialize(const std::string& seedFilePath, size_t rootKeyLenBytes = kDefaultRootKeyLen, size_t pbkdf2Iterations = kDefaultPbkdf2Iterations);
 
     // Returns the derived root key (hex string) - derived on demand and memoized until re-initialize.
     std::string GetRootKeyHex();
@@ -26,16 +35,16 @@ public:
     std::vector<unsigned char> GetRootKeyRaw();
 
     // Generate a new work key (binary) and return it. Optionally specify length in bytes.
-    std::vector<unsigned char> GenerateWorkKey(size_t lengthBytes = 32);
+    std::vector<unsigned char> GenerateWorkKey(size_t lengthBytes = kDefaultRootKeyLen);
 
     // Derive a work key from root key and an identifier (e.g., purpose, version) using HKDF-like derivation with HMAC-SHA256.
     // Returns the derived key bytes.
-    std::vector<unsigned char> DeriveWorkKey(const std::string& info, size_t lengthBytes = 32);
+    std::vector<unsigned char> DeriveWorkKey(const std::string& info, size_t lengthBytes = kDefaultRootKeyLen);
 
     // Get or create a work key that's stored encrypted with the root key using AES-256-GCM.
     // - If the file exists we will try to read and decrypt it. If decryption fails or file not found,
     //   a new random work key will be generated and encrypted + saved to the given path.
-    std::vector<unsigned char> GetOrCreateWorkKey(const std::string& workKeyFilePath, size_t lengthBytes = 32);
+    std::vector<unsigned char> GetOrCreateWorkKey(const std::string& workKeyFilePath, size_t lengthBytes = kDefaultRootKeyLen);
 
     // Rotate the seed (generate new seed and persist), forcing re-derivation of root key.
     void RotateSeed();
@@ -57,8 +66,8 @@ private:
     std::mutex mtx_;
     bool initialized_ = false;
     std::string seedFilePath_;
-    size_t pbkdf2Iterations_ = 100000;
-    size_t rootKeyLenBytes_ = 32;
+    size_t pbkdf2Iterations_ = kDefaultPbkdf2Iterations;
+    size_t rootKeyLenBytes_ = kDefaultRootKeyLen;
 
     std::vector<unsigned char> seed_; // stored on disk
     std::vector<unsigned char> rootKey_; // derived and cached

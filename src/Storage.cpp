@@ -51,8 +51,8 @@ Storage::Storage(const Config& cfg)
         std::string workKeyFile = (std::filesystem::path(storagePath_) / "work_key.bin").string();
         try {
             auto &km = KeyManager::Instance();
-            km.Initialize(seedFile, 32, 100000);
-            workKey_ = km.GetOrCreateWorkKey(workKeyFile, 32);
+            km.Initialize(seedFile, KeyManager::kDefaultRootKeyLen, KeyManager::kDefaultPbkdf2Iterations);
+            workKey_ = km.GetOrCreateWorkKey(workKeyFile, KeyManager::kDefaultRootKeyLen);
             spdlog::info("Storage: encryption enabled. Work key length: {}", workKey_.size());
             // provide work key to MessageWorker for automatic decryption in reports
             worker_.setWorkKey(workKey_);
@@ -74,11 +74,12 @@ void Storage::store(const std::string& key, const std::string& value) {
     try {
         // prepare key and iv
         std::string keyStr(reinterpret_cast<const char*>(workKey_.data()), workKey_.size());
-        auto ivVec = GenerateRandomBytes(12); // 96-bit IV
+        auto ivVec = GenerateRandomBytes(KeyManager::kGcmIvLen); // 96-bit IV
         std::string ivStr(reinterpret_cast<const char*>(ivVec.data()), ivVec.size());
 
-        std::vector<unsigned char> cipher(value.size() + 16);
-        unsigned char tag[16] = {0};
+        std::vector<unsigned char> cipher(value.size() + KeyManager::kGcmTagLen);
+        unsigned char tag[KeyManager::kGcmTagLen] = {0};
+
         int cipherLen = gcm_encrypt(value, keyStr, ivStr, cipher.data(), tag);
         if (cipherLen <= 0) {
             spdlog::error("Encryption failed for key {}", key);
@@ -87,7 +88,7 @@ void Storage::store(const std::string& key, const std::string& value) {
 
         // assemble stored string as: ENC:iv_b64:tag_b64:cipher_b64
         std::string ivB64 = base64Encode(ivVec);
-        std::string tagB64 = base64Encode(tag, 16);
+        std::string tagB64 = base64Encode(tag, KeyManager::kGcmTagLen);
         std::string cipherB64 = base64Encode(cipher.data(), static_cast<size_t>(cipherLen));
         std::string stored = "ENC:" + ivB64 + ":" + tagB64 + ":" + cipherB64;
 
