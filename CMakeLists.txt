@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(learn-cpp VERSION 0.1.0 LANGUAGES C CXX)
+project(learn_cpp VERSION 0.1.0 LANGUAGES C CXX)
 
 # 设置C++标准
 set(CMAKE_CXX_STANDARD 20)
@@ -21,14 +21,14 @@ include(FetchContent)
 FetchContent_Declare(
   googletest
   URL https://github.com/google/googletest/archive/refs/tags/v1.17.0.tar.gz
+  DOWNLOAD_EXTRACT_TIMESTAMP NEW
 )
 # 禁止GTest自带的测试
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
-add_executable(
-    learn-cpp
-    main.cpp
+add_library(
+    learn_cpp STATIC
     SingletonData.cpp
     src/database.cpp
     src/StatementWrapper.cpp
@@ -49,10 +49,13 @@ set(CMAKE_CXX_FLAGS -g)
 include(CPack)
 
 target_link_libraries(
-    learn-cpp
+    learn_cpp
     curl
     sqlite3
     crypto
     spdlog
     fmt
 )
+
+# 暴露头文件路径，方便测试程序包含
+target_include_directories(learn_cpp PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

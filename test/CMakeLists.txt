@@ -3,37 +3,28 @@ cmake_minimum_required(VERSION 3.10)
 include_directories(
     ../include
 )
-
-add_executable(
-    hello_test
-    hello_test.cpp
-)
-
-target_link_libraries(
-  hello_test
-  GTest::gtest_main
-)
-
 include(GoogleTest)
-gtest_discover_tests(hello_test)
 
 add_executable(
-    key_manager_demo
+    all_test
+    hello_test.cpp
     key_manager_demo.cpp
-    ../src/KeyManager.cpp
 )
 
 target_link_libraries(
-    key_manager_demo
+    all_test
+    PRIVATE learn_cpp
     spdlog
     crypto
     fmt
+    GTest::gtest_main
 )
 
-add_test(
-    NAME key_manager_demo
-    COMMAND key_manager_demo
-)
+# add_test(
+#     NAME key_manager_demo
+#     COMMAND key_manager_demo
+# )
+gtest_discover_tests(all_test key_manager_demo)
 
 # add_executable(
 #     storage_test
