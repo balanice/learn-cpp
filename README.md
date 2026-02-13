@@ -6,6 +6,18 @@ Rquirements:
 
 `C++ 20`, `CMake3.5+`, `sqlite3`, `OpenSSL3.x`, `curl`, `spdlog`
 
+## 调试与测试
+
+```shell
+cmake -S . -B build
+
+cmake --build build
+
+cd build
+#执行测试用例
+ctest
+```
+
 ## 数据库操作
 使用 sqlite 操作数据
 * database: 用于管理数据库，如数据库的创建，插入，删除等动作；
