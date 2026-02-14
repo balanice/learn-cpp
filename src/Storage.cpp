@@ -1,6 +1,10 @@
 #include "Storage.h"
 #include "MyCrypt2.h"
+#include "DateSizeRotatingSink.h"
+
 #include <spdlog/spdlog.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
+
 #include <filesystem>
 #include <sstream>
 #include <iomanip>
@@ -43,6 +47,25 @@ Storage::Storage(const Config& cfg)
         std::filesystem::create_directories(storagePath_);
     } catch (const std::exception& e) {
         spdlog::error("Failed to create storage directory {}: {}", storagePath_, e.what());
+    }
+
+    // Configure file logging under storage path.
+    // - filename base: app-log-YYYY-MM-DD.log
+    // - rotate when > 1MB or when date changes (sink handles both)
+    try {
+        // create sink and logger only once per process
+        if (!spdlog::get("app_logger")) {
+            auto file_sink = std::make_shared<spdlog::sinks::date_size_rotating_sink_mt>(std::filesystem::path(storagePath_), "app-log", 1024 * 1024);
+            auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+            std::vector<spdlog::sink_ptr> sinks{file_sink, console_sink};
+            auto logger = std::make_shared<spdlog::logger>("app_logger", sinks.begin(), sinks.end());
+            logger->set_level(spdlog::level::info);
+            spdlog::register_logger(logger);
+            spdlog::set_default_logger(logger);
+            spdlog::flush_on(spdlog::level::info);
+        }
+    } catch (const std::exception &e) {
+        spdlog::error("Failed to configure file logger in {}: {}", storagePath_, e.what());
     }
 
     if (encrypt_) {

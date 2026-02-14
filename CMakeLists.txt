@@ -33,6 +33,7 @@ add_library(
     src/StatementWrapper.cpp
     src/MyCrypt2.cpp
     src/KeyManager.cpp
+    src/DateSizeRotatingSink.cpp
     src/curl_test2.cpp
     src/Utils.cpp
     src/MessageWorker.cpp

@@ -9,7 +9,8 @@ Rquirements:
 ## 调试与测试
 
 ```shell
-cmake -S . -B build
+# Windows Msys2
+cmake -G "MinGW Makefiles" -S . -B build
 
 cmake --build build
 
