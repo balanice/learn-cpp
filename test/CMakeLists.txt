@@ -9,6 +9,7 @@ add_executable(
     all_test
     hello_test.cpp
     key_manager_demo.cpp
+    key_manager_test.cpp
 )
 
 target_link_libraries(
@@ -20,4 +21,4 @@ target_link_libraries(
     GTest::gtest_main
 )
 
-gtest_discover_tests(all_test key_manager_demo)
+gtest_discover_tests(all_test)

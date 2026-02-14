@@ -8,6 +8,7 @@
 #include <openssl/evp.h>
 #include <openssl/rand.h>
 #include <openssl/err.h>
+#include <openssl/crypto.h>
 #include <openssl/kdf.h>
 
 #include <spdlog/spdlog.h>
@@ -128,7 +129,32 @@ std::vector<unsigned char> KeyManager::DeriveWorkKey(const std::string& info, si
     params[0] = OSSL_PARAM_construct_octet_string("salt", seed_.data(), (int)seed_.size());
     params[1] = OSSL_PARAM_construct_octet_string("key", rootKey_.data(), (int)rootKey_.size());
     params[2] = OSSL_PARAM_construct_octet_string("info", const_cast<char*>(info.data()), (int)info.size());
-    params[3] = OSSL_PARAM_construct_size_t("digest", 0); // ignore
+    params[3] = OSSL_PARAM_construct_utf8_string("digest", const_cast<char*>("SHA256"), 0);
+    params[4] = OSSL_PARAM_construct_end();
+
+    if (1 != EVP_KDF_derive(kctx, out.data(), out.size(), params)) {
+        EVP_KDF_CTX_free(kctx);
+        throw std::runtime_error("HKDF derive failed");
+    }
+
+    EVP_KDF_CTX_free(kctx);
+    return out;
+}
+
+// Internal helper: HKDF derive using an explicit root + salt without taking the KeyManager mutex.
+// This lets callers that already hold `mtx_` derive keys safely (no double-lock).
+static std::vector<unsigned char> HkdfDeriveFromRoot(const std::vector<unsigned char>& root,
+                                                     const std::vector<unsigned char>& salt,
+                                                     const std::string& info, size_t lengthBytes) {
+    std::vector<unsigned char> out(lengthBytes);
+    EVP_KDF_CTX *kctx = EVP_KDF_CTX_new(EVP_KDF_fetch(NULL, "HKDF", NULL));
+    if (!kctx) throw std::runtime_error("EVP_KDF_CTX_new failed");
+
+    OSSL_PARAM params[5];
+    params[0] = OSSL_PARAM_construct_octet_string("salt", const_cast<unsigned char*>(salt.data()), (int)salt.size());
+    params[1] = OSSL_PARAM_construct_octet_string("key", const_cast<unsigned char*>(root.data()), (int)root.size());
+    params[2] = OSSL_PARAM_construct_octet_string("info", const_cast<char*>(info.data()), (int)info.size());
+    params[3] = OSSL_PARAM_construct_utf8_string("digest", const_cast<char*>("SHA256"), 0);
     params[4] = OSSL_PARAM_construct_end();
 
     if (1 != EVP_KDF_derive(kctx, out.data(), out.size(), params)) {
@@ -141,17 +167,6 @@ std::vector<unsigned char> KeyManager::DeriveWorkKey(const std::string& info, si
 }
 
 // --- AES-GCM helpers and encrypted file storage for work keys ---
-static std::vector<unsigned char> Sha256(const std::vector<unsigned char>& data) {
-    std::vector<unsigned char> out(KeyManager::kSha256Len);
-    EVP_MD_CTX *md = EVP_MD_CTX_new();
-    EVP_DigestInit_ex(md, EVP_sha256(), NULL);
-    EVP_DigestUpdate(md, data.data(), data.size());
-    unsigned int outlen = 0;
-    EVP_DigestFinal_ex(md, out.data(), &outlen);
-    EVP_MD_CTX_free(md);
-    return out;
-}
-
 static bool aesGcmEncrypt(const std::vector<unsigned char>& key32,
                           const std::vector<unsigned char>& plaintext,
                           std::vector<unsigned char>& iv,
@@ -217,10 +232,15 @@ static bool aesGcmDecrypt(const std::vector<unsigned char>& key32,
 }
 
 bool KeyManager::SaveEncryptedWorkKey(const std::string& path, const std::vector<unsigned char>& workKey) {
-    // derive AES-256 key by SHA256(rootKey_)
-    auto aesKey = Sha256(rootKey_);
+    // derive AES-256 key from `rootKey_` using HKDF with an explicit purpose label
+    // - purpose separation (info) prevents accidental key reuse across domains
+    // - use internal no-lock helper because caller already holds the mutex
+    auto aesKey = HkdfDeriveFromRoot(rootKey_, seed_, "storage-encryption", KeyManager::kSha256Len);
     std::vector<unsigned char> iv, ciphertext, tag;
-    if (!aesGcmEncrypt(aesKey, workKey, iv, ciphertext, tag)) {
+    bool ok = aesGcmEncrypt(aesKey, workKey, iv, ciphertext, tag);
+    // cleanse derived key from memory immediately
+    OPENSSL_cleanse(aesKey.data(), aesKey.size());
+    if (!ok) {
         spdlog::error("aesGcmEncrypt failed");
         return false;
     }
@@ -253,9 +273,13 @@ bool KeyManager::ReadEncryptedWorkKey(const std::string& path, std::vector<unsig
 
     spdlog::debug("ReadEncryptedWorkKey: iv={}, tag={}, ciphertext={}", iv.size(), tag.size(), ciphertext.size());
 
-    auto aesKey = Sha256(rootKey_);
+    // derive same AES-256 key via HKDF (purpose-labeled). use no-lock helper to avoid deadlock.
+    auto aesKey = HkdfDeriveFromRoot(rootKey_, seed_, "storage-encryption", KeyManager::kSha256Len);
     std::vector<unsigned char> plain;
-    if (!aesGcmDecrypt(aesKey, iv, tag, ciphertext, plain)) {
+    bool ok = aesGcmDecrypt(aesKey, iv, tag, ciphertext, plain);
+    // cleanse derived key from memory immediately
+    OPENSSL_cleanse(aesKey.data(), aesKey.size());
+    if (!ok) {
         spdlog::error("Failed to decrypt work key from {}", path);
         return false;
     }
