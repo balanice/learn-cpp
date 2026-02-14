@@ -28,8 +28,4 @@ private:
     std::string storagePath_;
     std::vector<unsigned char> workKey_;
     MessageWorker worker_;
-
-    // helpers
-    static std::string bytesToHex(const unsigned char* data, size_t len);
-    static std::string bytesToHex(const std::vector<unsigned char>& v);
 };

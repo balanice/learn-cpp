@@ -1,5 +1,7 @@
 #include "KeyManager.h"
 
+#include "Utils.h"
+
 #include <fstream>
 #include <stdexcept>
 #include <sstream>
@@ -12,15 +14,6 @@
 #include <openssl/kdf.h>
 
 #include <spdlog/spdlog.h>
-
-static std::string toHex(const unsigned char* data, size_t len) {
-    std::ostringstream oss;
-    oss << std::hex;
-    for (size_t i = 0; i < len; ++i) {
-        oss << std::setw(2) << std::setfill('0') << (int)data[i];
-    }
-    return oss.str();
-}
 
 static std::vector<unsigned char> GenerateRandomBytes(size_t length) {
     std::vector<unsigned char> buf(length);
@@ -99,7 +92,7 @@ void KeyManager::loadSeedIfExists() {
 std::string KeyManager::GetRootKeyHex() {
     std::lock_guard<std::mutex> lk(mtx_);
     ensureInitialized();
-    return toHex(rootKey_.data(), rootKey_.size());
+    return  Util::BytesToHex(rootKey_);
 }
 
 std::vector<unsigned char> KeyManager::GetRootKeyRaw() {

@@ -9,35 +9,9 @@
 #include <sstream>
 #include <iomanip>
 #include <openssl/evp.h>
+#include "Utils.h"
 
 using namespace std::string_literals;
-
-std::string Storage::bytesToHex(const unsigned char* data, size_t len) {
-    std::ostringstream oss;
-    oss << std::hex << std::setfill('0');
-    for (size_t i = 0; i < len; ++i) {
-        oss << std::setw(2) << static_cast<int>(data[i]);
-    }
-    return oss.str();
-}
-
-std::string Storage::bytesToHex(const std::vector<unsigned char>& v) {
-    return bytesToHex(v.data(), v.size());
-}
-
-// Base64 encode helper using OpenSSL EVP_EncodeBlock
-static std::string base64Encode(const unsigned char* data, size_t len) {
-    if (len == 0) return std::string();
-    size_t outlen = 4 * ((len + 2) / 3);
-    std::vector<unsigned char> out(outlen + 1); // +1 for safety
-    int olen = EVP_EncodeBlock(out.data(), data, static_cast<int>(len));
-    if (olen < 0) return std::string();
-    return std::string(reinterpret_cast<char*>(out.data()), static_cast<size_t>(olen));
-}
-
-static std::string base64Encode(const std::vector<unsigned char>& v) {
-    return base64Encode(v.data(), v.size());
-}
 
 Storage::Storage(const Config& cfg)
     : encrypt_(cfg.isEncrypted()), storagePath_(cfg.getStoragePath())
@@ -110,9 +84,9 @@ void Storage::store(const std::string& key, const std::string& value) {
         }
 
         // assemble stored string as: ENC:iv_b64:tag_b64:cipher_b64
-        std::string ivB64 = base64Encode(ivVec);
-        std::string tagB64 = base64Encode(tag, KeyManager::kGcmTagLen);
-        std::string cipherB64 = base64Encode(cipher.data(), static_cast<size_t>(cipherLen));
+        std::string ivB64 = Util::Base64Encode(ivVec);
+        std::string tagB64 = Util::Base64Encode(tag, KeyManager::kGcmTagLen);
+        std::string cipherB64 = Util::Base64Encode(cipher.data(), static_cast<size_t>(cipherLen));
         std::string stored = "ENC:" + ivB64 + ":" + tagB64 + ":" + cipherB64;
 
         WriteMessage m{-1, key, stored};
