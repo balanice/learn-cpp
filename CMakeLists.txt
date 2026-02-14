@@ -29,14 +29,11 @@ FetchContent_MakeAvailable(googletest)
 
 add_library(
     learn_cpp STATIC
-    SingletonData.cpp
     src/database.cpp
     src/StatementWrapper.cpp
-    Crypt.cpp
     MyCrypt2.cpp
     src/KeyManager.cpp
     src/curl_test2.cpp
-    src/JsonTest.cpp
     src/Utils.cpp
     src/MessageWorker.cpp
     src/Config.cpp
