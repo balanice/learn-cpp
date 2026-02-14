@@ -31,7 +31,7 @@ add_library(
     learn_cpp STATIC
     src/database.cpp
     src/StatementWrapper.cpp
-    MyCrypt2.cpp
+    src/MyCrypt2.cpp
     src/KeyManager.cpp
     src/curl_test2.cpp
     src/Utils.cpp
