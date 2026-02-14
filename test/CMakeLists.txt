@@ -10,6 +10,8 @@ add_executable(
     hello_test.cpp
     key_manager_demo.cpp
     key_manager_test.cpp
+    storage_test.cpp
+    config_test.cpp
 )
 
 target_link_libraries(
