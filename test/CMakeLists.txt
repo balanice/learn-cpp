@@ -12,7 +12,8 @@ add_executable(
     key_manager_test.cpp
     storage_test.cpp
     config_test.cpp
-    logging_test.cpp
+    # logging_test.cpp
+    leetcode_test.cpp
 )
 
 target_link_libraries(

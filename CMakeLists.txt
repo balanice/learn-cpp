@@ -39,6 +39,7 @@ add_library(
     src/MessageWorker.cpp
     src/Config.cpp
     src/Storage.cpp
+    src/LeetCode.cpp
 )
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})

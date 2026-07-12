@@ -8,6 +8,19 @@ Rquirements:
 
 ## 调试与测试
 
+### Linux
+
+```shell
+# build
+cmake --preset linux-gcc-debug
+cmake --build out/build/linux-gcc-debug
+
+# run test
+cd /home/force/projects/learn-cpp
+ctest --test-dir out/build/linux-gcc-debug --output-on-failure
+```
+
+### Windows msys2
 ```shell
 # Windows Msys2
 cmake -G "MinGW Makefiles" -S . -B build
