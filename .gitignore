@@ -10,3 +10,4 @@ CMakeFiles/
 *.dll
 *.so
 *.dylib
+build-linux/

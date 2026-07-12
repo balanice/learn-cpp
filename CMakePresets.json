@@ -1,18 +1,42 @@
 {
-    "version": 8,
-    "configurePresets": [
-        {
-            "name": "GCC 15.2.0 x86_64-w64-mingw32 (ucrt64)",
-            "displayName": "GCC 15.2.0 x86_64-w64-mingw32 (ucrt64)",
-            "description": "Using compilers: C = C:\\msys64\\ucrt64\\bin\\gcc.exe, CXX = C:\\msys64\\ucrt64\\bin\\g++.exe",
-            "generator": "MinGW Makefiles",
-            "binaryDir": "${sourceDir}/out/build/${presetName}",
-            "cacheVariables": {
-                "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
-                "CMAKE_C_COMPILER": "C:/msys64/ucrt64/bin/gcc.exe",
-                "CMAKE_CXX_COMPILER": "C:/msys64/ucrt64/bin/g++.exe",
-                "CMAKE_BUILD_TYPE": "Debug"
-            }
-        }
-    ]
+  "version": 8,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 10,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "linux-gcc-debug",
+      "displayName": "Linux GCC Debug",
+      "description": "Configure the project with the system GCC toolchain on Linux",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
+        "CMAKE_C_COMPILER": "/usr/bin/cc",
+        "CMAKE_CXX_COMPILER": "/usr/bin/c++",
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    },
+    {
+      "name": "windows-msys-debug",
+      "displayName": "Windows MSYS2 Debug",
+      "description": "Configure the project with the MSYS2 GCC toolchain on Windows",
+      "generator": "MinGW Makefiles",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
+        "CMAKE_C_COMPILER": "C:/msys64/ucrt64/bin/gcc.exe",
+        "CMAKE_CXX_COMPILER": "C:/msys64/ucrt64/bin/g++.exe",
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    }
+  ]
 }
